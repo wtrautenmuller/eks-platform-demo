@@ -1,0 +1,53 @@
+name: Deploy EKS
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: api-secret-demo
+
+jobs:
+
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Configure AWS
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+        aws-region: us-east-1
+
+    - name: Login ECR
+      run: |
+        aws ecr get-login-password --region us-east-1 \
+        | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+
+    - name: Build Image
+      run: |
+        docker build -t api-secret-demo -f docker/Dockerfile .
+
+    - name: Tag Image
+      run: |
+        docker tag api-secret-demo:latest $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/api-secret-demo:latest
+
+    - name: Push Image
+      run: |
+        docker push $ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/api-secret-demo:latest
+
+    - name: Update kubeconfig
+      run: |
+        aws eks update-kubeconfig --name demo-eks --region us-east-1
+
+    - name: Deploy Kubernetes
+      run: |
+        kubectl apply -f k8s/
