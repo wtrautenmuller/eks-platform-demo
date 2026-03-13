@@ -36,8 +36,8 @@ jobs:
 
       # 4️⃣ Build da imagem Docker
       - name: Build Docker image
-        run: |
-          docker build -t api-secret-demo:latest ./docker
+        run: docker build -t api-secret-demo:latest .
+
 
       # 5️⃣ Tag da imagem para o ECR
       - name: Tag Docker image
