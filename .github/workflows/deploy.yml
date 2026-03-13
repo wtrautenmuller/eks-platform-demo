@@ -8,6 +8,7 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: api-secret-demo
+  ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
 
 jobs:
 
